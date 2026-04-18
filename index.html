@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cruz Lauro III - Portfolio</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0a0a1a; color: #e0e0e0; min-height: 100vh; }
+    .hero { text-align: center; padding: 60px 20px 40px; }
+    .hero h1 { font-size: 2.5em; background: linear-gradient(135deg, #ff6b9d, #c084fc, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { color: #888; margin-top: 10px; font-size: 1.1em; }
+    .container { max-width: 1000px; margin: 0 auto; padding: 0 20px 40px; }
+    h2 { font-size: 1.4em; color: #c084fc; margin-bottom: 20px; text-align: center; }
+    .projects { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .card { background: #1a1a2e; border-radius: 16px; padding: 24px; border: 1px solid #2a2a4a; transition: all 0.3s; }
+    .card:hover { border-color: #c084fc; transform: translateY(-4px); box-shadow: 0 8px 30px rgba(192,132,252,0.1); }
+    .card h3 { font-size: 1.1em; margin-bottom: 8px; }
+    .card h3 a { color: #60a5fa; text-decoration: none; }
+    .card h3 a:hover { color: #c084fc; }
+    .card p { color: #999; font-size: 0.9em; line-height: 1.6; margin-bottom: 12px; }
+    .card .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag { padding: 3px 10px; background: #2a2a4a; border-radius: 20px; font-size: 0.75em; color: #aaa; }
+    .tag.live { background: #064e3b; color: #6ee7b7; }
+    .links { text-align: center; margin-top: 40px; }
+    .links a { color: #c084fc; text-decoration: none; margin: 0 15px; font-size: 0.95em; }
+    .links a:hover { text-decoration: underline; }
+    .loading { text-align: center; color: #666; padding: 40px; }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>Cruz Lauro III</h1>
+    <p>Software Engineer</p>
+  </div>
+  <div class="container">
+    <h2>Projects</h2>
+    <div class="projects" id="projects">
+      <div class="loading">Loading repositories...</div>
+    </div>
+    <div class="links">
+      <a href="https://github.com/cruzlauroiii">GitHub</a>
+    </div>
+  </div>
+
+  <script>
+    const GITHUB_USER = 'cruzlauroiii'
+    const GITHUB_PAGES_BASE = `https://${GITHUB_USER}.github.io`
+
+    // Repos that have GitHub Pages
+    const PAGES_REPOS = new Set(['voicechat', 'cruzlauroiii.github.io', 'wolfstruckingco.com'])
+
+    // Custom descriptions and tags
+    const REPO_META = {
+      'voicechat': {
+        description: 'AIRI VTuber Voice Chat - AI companion with Kokoro TTS (48+ voices), Live2D avatar, and Claude Code integration.',
+        tags: ['AI', 'VTuber', 'Kokoro TTS', 'Claude Code', 'Live2D'],
+        live: true,
+      },
+      'wolfstruckingco.com': {
+        description: 'Wolfs Trucking Co. Logistics Platform. Driver scheduling, route planning, delivery management, and AI voice dispatch. .NET 11 Blazor WASM + MAUI.',
+        tags: ['.NET 11', 'Blazor WASM', 'MAUI', 'Logistics', 'AI Voice', 'Trucking'],
+        live: true,
+      },
+      'chrome-devtools-cli': {
+        description: 'Pure .NET Chrome DevTools Protocol CLI with persistent WebSocket, UIAutomation, and HTTP serve mode.',
+        tags: ['.NET', 'Chrome DevTools', 'CDP', 'Automation'],
+      },
+      'claude-code': {
+        description: 'Claude Code - agentic coding tool for the terminal.',
+        tags: ['AI', 'CLI', 'Anthropic'],
+      },
+    }
+
+    async function loadRepos() {
+      try {
+        const res = await fetch(`https://api.github.com/users/${GITHUB_USER}/repos?sort=updated&per_page=30`)
+        const repos = await res.json()
+        const container = document.getElementById('projects')
+
+        // Filter out the portfolio repo itself
+        const filtered = repos.filter(r => r.name !== `${GITHUB_USER}.github.io` && !r.fork)
+
+        if (filtered.length === 0) {
+          container.innerHTML = '<p style="text-align:center;color:#888;">No public repositories yet.</p>'
+          return
+        }
+
+        container.innerHTML = filtered.map(repo => {
+          const meta = REPO_META[repo.name] || {}
+          const desc = meta.description || repo.description || 'No description'
+          const tags = meta.tags || [repo.language].filter(Boolean)
+          const hasPages = PAGES_REPOS.has(repo.name) || meta.live
+          const pagesUrl = `${GITHUB_PAGES_BASE}/${repo.name}`
+
+          return `<div class="card">
+            <h3>
+              <a href="${repo.html_url}" target="_blank">${repo.name}</a>
+              ${hasPages ? `<a href="${pagesUrl}" target="_blank" style="font-size:0.7em; color:#6ee7b7; margin-left:8px;">LIVE</a>` : ''}
+            </h3>
+            <p>${desc}</p>
+            <div class="tags">
+              ${tags.map(t => `<span class="tag">${t}</span>`).join('')}
+              ${hasPages ? '<span class="tag live">GitHub Pages</span>' : ''}
+              ${repo.stargazers_count > 0 ? `<span class="tag">${repo.stargazers_count} stars</span>` : ''}
+            </div>
+          </div>`
+        }).join('')
+      } catch (e) {
+        document.getElementById('projects').innerHTML = `<p style="color:#f87171;">Failed to load: ${e.message}</p>`
+      }
+    }
+
+    loadRepos()
+  </script>
+</body>
+</html>
