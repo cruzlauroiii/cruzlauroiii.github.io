@@ -47,28 +47,62 @@
     const GITHUB_USER = 'cruzlauroiii'
     const GITHUB_PAGES_BASE = `https://${GITHUB_USER}.github.io`
 
-    // Repos that have GitHub Pages
-    const PAGES_REPOS = new Set(['voicechat', 'cruzlauroiii.github.io', 'wolfstruckingco.com'])
+    // Repos served from cruzlauroiii.github.io/<name>
+    const PAGES_REPOS = new Set(['voicechat', 'hobbyland'])
+
+    // Repos with their own custom domains
+    const CUSTOM_DOMAINS = {
+      'prtask.com': 'https://prtask.com',
+      'rnapop.com': 'https://rnapop.com',
+      'hir88.com': 'https://hir88.com',
+      'wolfstruckingco.com': 'https://wolfstruckingco.com',
+    }
 
     // Custom descriptions and tags
     const REPO_META = {
       'voicechat': {
-        description: 'AIRI VTuber Voice Chat - AI companion with Kokoro TTS (48+ voices), Live2D avatar, and Claude Code integration.',
+        description: 'AIRI VTuber Voice Chat — AI companion with Kokoro TTS (48+ voices), Live2D avatar, and Claude Code integration.',
         tags: ['AI', 'VTuber', 'Kokoro TTS', 'Claude Code', 'Live2D'],
-        live: true,
       },
       'wolfstruckingco.com': {
         description: 'Wolfs Trucking Co. Logistics Platform. Driver scheduling, route planning, delivery management, and AI voice dispatch. .NET 11 Blazor WASM + MAUI.',
         tags: ['.NET 11', 'Blazor WASM', 'MAUI', 'Logistics', 'AI Voice', 'Trucking'],
-        live: true,
+      },
+      'prtask.com': {
+        description: 'PrTask — multi-tenant task and workflow platform with Maya payments, GitHub private-repo storage, and Cloudflare Workers backend. .NET 11 Blazor WASM.',
+        tags: ['.NET 11', 'Blazor WASM', 'Maya', 'Cloudflare Workers', 'Multi-tenant'],
+      },
+      'rnapop.com': {
+        description: 'RNA Therapy Platform — full-stack RNA therapeutics research tool with lab workflows and clinical result tracking.',
+        tags: ['React', 'RNA', 'Clinical', 'Research'],
+      },
+      'hir88.com': {
+        description: 'Hir88 — personal site / landing page with ASP.NET static server.',
+        tags: ['ASP.NET', 'Static site'],
       },
       'chrome-devtools-cli': {
         description: 'Pure .NET Chrome DevTools Protocol CLI with persistent WebSocket, UIAutomation, and HTTP serve mode.',
         tags: ['.NET', 'Chrome DevTools', 'CDP', 'Automation'],
       },
+      'hobbyland': {
+        description: 'Hobbyland Group — recruitment, onboarding, staff, and finance portal. Blazor WASM deployed to GitHub Pages.',
+        tags: ['Blazor WASM', 'Recruitment', 'HR'],
+      },
       'claude-code': {
-        description: 'Claude Code - agentic coding tool for the terminal.',
+        description: 'Claude Code — agentic coding tool for the terminal. Fork with custom features.',
         tags: ['AI', 'CLI', 'Anthropic'],
+      },
+      'gemini-cli': {
+        description: 'Gemini CLI — agentic coding tool. Fork with /loop recurring-prompt command.',
+        tags: ['AI', 'CLI', 'Google'],
+      },
+      'pet-kingdom-defenders': {
+        description: 'Pet Kingdom Defenders — tower-defense game prototype.',
+        tags: ['Game'],
+      },
+      'openai-github-copilot': {
+        description: 'OpenAI GitHub Copilot — older experiment.',
+        tags: ['AI', 'Archive'],
       },
     }
 
@@ -90,19 +124,21 @@
           const meta = REPO_META[repo.name] || {}
           const desc = meta.description || repo.description || 'No description'
           const tags = meta.tags || [repo.language].filter(Boolean)
-          const hasPages = PAGES_REPOS.has(repo.name) || meta.live
-          const pagesUrl = `${GITHUB_PAGES_BASE}/${repo.name}`
+          const customDomain = CUSTOM_DOMAINS[repo.name]
+          const hasPages = PAGES_REPOS.has(repo.name)
+          const liveUrl = customDomain || (hasPages ? `${GITHUB_PAGES_BASE}/${repo.name}` : null)
 
           return `<div class="card">
             <h3>
               <a href="${repo.html_url}" target="_blank">${repo.name}</a>
-              ${hasPages ? `<a href="${pagesUrl}" target="_blank" style="font-size:0.7em; color:#6ee7b7; margin-left:8px;">LIVE</a>` : ''}
+              ${liveUrl ? `<a href="${liveUrl}" target="_blank" style="font-size:0.7em; color:#6ee7b7; margin-left:8px;">LIVE →</a>` : ''}
             </h3>
             <p>${desc}</p>
             <div class="tags">
               ${tags.map(t => `<span class="tag">${t}</span>`).join('')}
-              ${hasPages ? '<span class="tag live">GitHub Pages</span>' : ''}
-              ${repo.stargazers_count > 0 ? `<span class="tag">${repo.stargazers_count} stars</span>` : ''}
+              ${customDomain ? `<span class="tag live">${customDomain.replace('https://','')}</span>` : ''}
+              ${hasPages && !customDomain ? '<span class="tag live">GitHub Pages</span>' : ''}
+              ${repo.stargazers_count > 0 ? `<span class="tag">★ ${repo.stargazers_count}</span>` : ''}
             </div>
           </div>`
         }).join('')
